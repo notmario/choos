@@ -88,15 +88,6 @@ let armies = {
     "FR4",
     "N2W4",
     "K"
-  ],
-  "forward": [
-    null,
-    "fmWfceFifmnD",
-    "fNbB",
-    "fBbN",
-    "fRrRlRbFbW",
-    "fRlRrRfBbNK",
-    "K"
   ]
 }
 
@@ -522,7 +513,7 @@ let update_screen = () => {
   if (gameState === "menu") {
     ctx.fillStyle = "white";
     ctx.font = "30px Arial";
-    ctx.fillText("Enter name to join game", 10, 50);
+    ctx.fillText("Enter code to join game", 10, 50);
     ctx.fillText(current_entered_name, 10, 100);
   } else if (gameState === "waiting") {
     ctx.fillStyle = "white";
@@ -555,9 +546,6 @@ let update_screen = () => {
       ctx.fillText("Mashers", 40, 640);
 
       ctx.strokeRect(10, 700, 150, 50);
-      ctx.fillText("Forward", 40, 740);
-
-      ctx.strokeRect(10, 800, 150, 50);
       ctx.fillText("Random", 40, 840);
 
     } else {
@@ -590,6 +578,31 @@ let update_screen = () => {
         }
       }
     }
+    // owned piece moves
+    if (selected_square) {
+      let b = [[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,server_state.board[selected_square[1]][selected_square[0]],0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]] 
+      // draw mini board
+      for (let i = 0; i < 8; i++) {
+        for (let j = 0; j < 8; j++) {
+          // 64x64, centered
+          let draw_i = i;
+          let draw_j = j;
+          if (you === -1) {
+            draw_i = 7 - i;
+            draw_j = 7 - j;
+          }
+          ctx.fillStyle = (i + j) % 2 === 0 ? "#ffcea0" : "#d18b47";
+          if (check_valid_move_betza(b, [3,3], [j, i]))
+            ctx.fillStyle = "#00ff00";
+          ctx.fillRect(draw_i * 64 + 1034, draw_j * 64 + 512, 64, 64);
+          // draw piece
+          if (b[j][i] !== 0) {
+            ctx.drawImage(images[b[j][i]], draw_i * 64 + 1034, draw_j * 64 + 512, 64, 64);
+          }
+        }
+      }
+    }
+
     // draw turn
     if (you === server_state.turn) {
       ctx.fillStyle = "white";
@@ -668,6 +681,10 @@ canvas.addEventListener("click", (e) => {
             new_square[0] = 7 - new_square[0];
             new_square[1] = 7 - new_square[1];
           }
+          // if we don't own, don't move
+          if (server_state.board[selected_square[1]][selected_square[0]] * you <= 0) {
+            selected_square = null;
+          } else
           if (check_valid_move_betza(server_state.board, [selected_square[1], selected_square[0]], [new_square[1], new_square[0]])) {
             // move piece
             let new_board = server_state.board;
