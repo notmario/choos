@@ -164,7 +164,7 @@ let armies = {
   "snipers": [
     null,
     "fmWfceFifmnD",
-    "mW2zN",
+    "mWmDzN",
     "mWzDzH",
     "mFzNzC",
     "mWzDzHmFzNzC",
@@ -806,7 +806,7 @@ let update_screen = () => {
           let draw_i = i;
           let draw_j = j;
           ctx.fillStyle = (i + j) % 2 === 0 ? "#ffcea0" : "#d18b47";
-          let type = check_valid_move_betza(b, [3,3], [j, i], Math.sign(server_state.board[selected_square[1]][selected_square[0]] === 1 ? server_state.white_army : server_state.black_army));
+          let type = check_valid_move_betza(b, [3,3], [j, i], (Math.sign(server_state.board[selected_square[1]][selected_square[0]] === 1) ? server_state.white_army : server_state.black_army));
           if (type === "all")
             ctx.fillStyle = "#00ff00";
           else if (type === "move")
