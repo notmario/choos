@@ -315,7 +315,7 @@ let check_valid_move_betza = (board, from, to) => {
       // travel in that direction until you hit a piece
       let ride = (vec,l) => {
         let x = from[1] + vec[1] * color;
-        let y = from[0] + vec[0] * color;
+        let y = from[0] + vec[0];
         while (x >= 0 && x < 8 && y >= 0 && y < 8 && l-- > 0) {
           let piece = board[y][x];
           if (piece !== 0) {
@@ -329,7 +329,7 @@ let check_valid_move_betza = (board, from, to) => {
             moves.push([y-from[0], x-from[1], type]);
           }
           x += vec[1] * color;
-          y += vec[0] * color;
+          y += vec[0];
         }
       }
 
