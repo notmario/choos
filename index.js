@@ -143,6 +143,25 @@ let armies = {
     "NB",
     "K"
   ],
+  "missiles": [
+    null,
+    "fmWfceFifmnD",
+    "ffNfDFnH",
+    "fNfDbWlWrWffC",
+    "fRfNF",
+    "fRfNWFlDrD",
+    "K"
+  ],
+  "nanners": [
+    null,
+    "fmWfceFifmnD",
+    "llCrrCffNbbNlWrW",
+    "fsNbFfDfWbW",
+    "ffNbbNFlRrR",
+    "FWNDlRrR",
+    "K"
+  ]
+
 }
 
 let check_valid_move_betza = (board, from, to) => {
@@ -429,14 +448,29 @@ let check_valid_move_betza = (board, from, to) => {
       }
       if (atom === "H") {
         // 3,0
-        if (direction === "all" || direction === "forward")
-          moves.push([-3, 0, type]);
-        if (direction === "all" || direction === "backward")
-          moves.push([3, 0, type]);
-        if (direction === "all" || direction === "left")
-          moves.push([0, -3, type]);
-        if (direction === "all" || direction === "right")
-          moves.push([0, 3, type]);
+        if (cs.includes("n")) {
+          if (direction === "all" || direction === "forward")
+            if (board?.[from[0] - 1]?.[from[1]] === 0 && board?.[from[0] - 2]?.[from[1]] === 0)
+              moves.push([-3, 0, type]);
+          if (direction === "all" || direction === "backward")
+            if (board?.[from[0] + 1]?.[from[1]] === 0 && board?.[from[0] + 2]?.[from[1]] === 0)
+              moves.push([3, 0, type]);
+          if (direction === "all" || direction === "left")
+            if (board?.[from[0]]?.[from[1] - 1] === 0 && board?.[from[0]]?.[from[1] - 2] === 0)
+              moves.push([0, -3, type]);
+          if (direction === "all" || direction === "right")
+            if (board?.[from[0]]?.[from[1] + 1] === 0 && board?.[from[0]]?.[from[1] + 2] === 0)
+              moves.push([0, 3, type]);
+        } else {
+          if (direction === "all" || direction === "forward")
+            moves.push([-3, 0, type]);
+          if (direction === "all" || direction === "backward")
+            moves.push([3, 0, type]);
+          if (direction === "all" || direction === "left")
+            moves.push([0, -3, type]);
+          if (direction === "all" || direction === "right")
+            moves.push([0, 3, type]);
+        }
       }
       if (atom === "C") {
         // 3,1
@@ -718,7 +752,7 @@ canvas.addEventListener("click", (e) => {
       
     }
   } else if (gameState === "game") {
-    if (you === server_state.turn) {
+    if (true) {
       // click square to select piece
       if (!selected_square) {
         if (x < 1024 && y < 1024) {
@@ -741,7 +775,7 @@ canvas.addEventListener("click", (e) => {
             new_square[1] = 7 - new_square[1];
           }
           // if we don't own, don't move
-          if (server_state.board[selected_square[1]][selected_square[0]] * you <= 0) {
+          if (server_state.board[selected_square[1]][selected_square[0]] * you <= 0 || you !== server_state.turn) {
             selected_square = null;
           } else
           if (check_valid_move_betza(server_state.board, [selected_square[1], selected_square[0]], [new_square[1], new_square[0]])) {
