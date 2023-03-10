@@ -88,7 +88,61 @@ let armies = {
     "FR4",
     "N2W4",
     "K"
-  ]
+  ],
+  "wizards": [
+    null,
+    "fmWfceFifmnD",
+    "ffNbbNW",
+    "FC",
+    "WllNrrNA",
+    "FWAN",
+    "K"
+  ],
+  "pizzaer": [
+    null,
+    "fmWfceFifmnD",
+    "ffNbbNbFfsC",
+    "lDrDfAfWbWF",
+    "lWrWFffNbbNfHbH",
+    "FWADffN",
+    "K"
+  ],
+  "crabbie": [
+    null,
+    "fmWfceFifmnD",
+    "ffNbsNF",
+    "fDbDffNF",
+    "WfAfNF",
+    "llCrrCNFW",
+    "K"
+  ],
+  "poodoos": [
+    null,
+    "fmWfceFifmnD",
+    "bNFfWlWrW",
+    "WbNfF",
+    "fNbRlRrR",
+    "WfFNbRlRrR",
+    "K"
+  ],
+  "knights": [
+    null,
+    "fmWfceFifmnD",
+    "N",
+    "ffNbbNF",
+    "ND",
+    "FNN",
+    "K"
+  ],
+  "bishops": [
+    null,
+    "fmWfceFifmnD",
+    "FA",
+    "B",
+    "WB",
+    "NB",
+    "K"
+  ],
 }
 
 let check_valid_move_betza = (board, from, to) => {
@@ -203,6 +257,9 @@ let check_valid_move_betza = (board, from, to) => {
     if (cs.indexOf("l") !== cs.lastIndexOf("l")) direction = "superleft";
     if (cs.indexOf("r") !== cs.lastIndexOf("r")) direction = "superright";
 
+    if (cs.includes("f") && cs.includes("s")) direction = "semiforward"; // crab, etc.
+    if (cs.includes("b") && cs.includes("s")) direction = "semibackward";
+
     // black flipped
     if (color === -1) {
       if (direction === "forward") direction = "backward";
@@ -213,6 +270,8 @@ let check_valid_move_betza = (board, from, to) => {
       else if (direction === "superbackward") direction = "superforward";
       else if (direction === "superleft") direction = "superright";
       else if (direction === "superright") direction = "superleft";
+      else if (direction === "semiforward") direction = "semibackward";
+      else if (direction === "semibackward") direction = "semiforward";
     }
     let type = "all";
     if (cs.includes("m")) type = "move";
@@ -247,6 +306,8 @@ let check_valid_move_betza = (board, from, to) => {
       else if (atom === "N") vec = [2, 1];
       else if (atom === "A") vec = [2, 2];
       else if (atom === "D") vec = [2, 0];
+      else if (atom === "H") vec = [3, 0];
+      else if (atom === "C") vec = [3, 1];
 
       let length = atoms[1];
       if (atom === length) length = 8;
@@ -273,7 +334,7 @@ let check_valid_move_betza = (board, from, to) => {
       }
 
       if (direction === "all" || direction === "forward") {
-        ride([-vec[0], -vec[1]],length);
+        ride([-vec[0], vec[1]],length);
         ride([-vec[0], -vec[1]],length);
       }
       if (direction === "all" || direction === "backward") {
@@ -320,13 +381,13 @@ let check_valid_move_betza = (board, from, to) => {
           moves.push([2, -1, type]);
         if (direction === "all" || direction === "backward" || direction === "right" || direction === "superbackward") 
           moves.push([2, 1, type]);
-        if (direction === "all" || direction === "left" || direction === "forward" || direction === "superleft")
+        if (direction === "all" || direction === "left" || direction === "forward" || direction === "superleft" || direction === "semiforward")
           moves.push([-1, -2, type]);
-        if (direction === "all" || direction === "left" || direction === "backward" || direction === "superleft")
+        if (direction === "all" || direction === "left" || direction === "backward" || direction === "superleft" || direction === "semibackward")
           moves.push([1, -2, type]);
-        if (direction === "all" || direction === "right" || direction === "forward" || direction === "superright")
+        if (direction === "all" || direction === "right" || direction === "forward" || direction === "superright" || direction === "semiforward")
           moves.push([-1, 2, type]);
-        if (direction === "all" || direction === "right" || direction === "backward" || direction === "superright")
+        if (direction === "all" || direction === "right" || direction === "backward" || direction === "superright" || direction === "semibackward")
           moves.push([1, 2, type]);
       }
       if (atom === "A") {
@@ -376,6 +437,25 @@ let check_valid_move_betza = (board, from, to) => {
           moves.push([0, -3, type]);
         if (direction === "all" || direction === "right")
           moves.push([0, 3, type]);
+      }
+      if (atom === "C") {
+        // 3,1
+        if (direction === "all" || direction === "forward" || direction === "left" || direction === "superforward")
+          moves.push([-3, -1, type]);
+        if (direction === "all" || direction === "forward" || direction === "right" || direction === "superforward")
+          moves.push([-3, 1, type]);
+        if (direction === "all" || direction === "backward" || direction === "left" || direction === "superbackward")
+          moves.push([3, -1, type]);
+        if (direction === "all" || direction === "backward" || direction === "right" || direction === "superbackward") 
+          moves.push([3, 1, type]);
+        if (direction === "all" || direction === "left" || direction === "forward" || direction === "superleft" || direction === "semiforward")
+          moves.push([-1, -3, type]);
+        if (direction === "all" || direction === "left" || direction === "backward" || direction === "superleft" || direction === "semibackward")
+          moves.push([1, -3, type]);
+        if (direction === "all" || direction === "right" || direction === "forward" || direction === "superright" || direction === "semiforward")
+          moves.push([-1, 3, type]);
+        if (direction === "all" || direction === "right" || direction === "backward" || direction === "superright" || direction === "semibackward")
+          moves.push([1, 3, type]);
       }
     }
   }
@@ -527,26 +607,17 @@ let update_screen = () => {
 
       ctx.strokeStyle = "white";
       ctx.lineWidth = 2;
-      ctx.strokeRect(10, 100, 150, 50);
-      ctx.fillText("Default", 40, 140);
 
-      ctx.strokeRect(10, 200, 150, 50);
-      ctx.fillText("Clobber", 40, 240);
-
-      ctx.strokeRect(10, 300, 150, 50);
-      ctx.fillText("Nutters", 40, 340);
-
-      ctx.strokeRect(10, 400, 150, 50);
-      ctx.fillText("Rookies", 40, 440);
-
-      ctx.strokeRect(10, 500, 150, 50);
-      ctx.fillText("Flyings", 40, 540);
-
-      ctx.strokeRect(10, 600, 150, 50);
-      ctx.fillText("Mashers", 40, 640);
-
-      ctx.strokeRect(10, 700, 150, 50);
-      ctx.fillText("Random", 40, 840);
+      // 4 columns, loop over armies
+      ctx.textAlign = "center";
+      for (let i = 0; i < Object.keys(armies).length; i++) {
+        let army = Object.keys(armies)[i];
+        let col = i % 8;
+        let row = Math.floor(i / 8);
+        ctx.strokeRect(10 + col * 150, 100 + row * 150, 140, 140);
+        ctx.fillText(army, 80 + col * 150, 100 + row * 150 + 80);
+      }
+      ctx.textAlign = "left";
 
     } else {
       ctx.fillText("Waiting for other player to pick their army...", 10, 50);
@@ -629,7 +700,9 @@ canvas.addEventListener("click", (e) => {
   if (gameState === "piece_select") {
     if (you === server_state.turn) {
       for (let army = 0; army < Object.keys(armies).length; army++) {
-        if (x > 10 && x < 160 && y > 100 + 100 * army && y < 150 + 100 * army)
+        let col = army % 8;
+        let row = Math.floor(army / 8);
+        if (x > 10 + col * 150 && x < 150 + col * 150 && y > 100 + row * 150 && y < 240 + row * 150)
           if (you === 1) {
             update(ref(database, "games/" + current_entered_name), {
               white_army: Object.keys(armies)[army],
@@ -642,21 +715,7 @@ canvas.addEventListener("click", (e) => {
             });
           }
       }
-      // random
-      if (x > 10 && x < 160 && y > 100 + 100 * Object.keys(armies).length && y < 150 + 100 * Object.keys(armies).length) {
-        let random_army = Object.keys(armies)[Math.floor(Math.random() * Object.keys(armies).length)];
-        if (you === 1) {
-          update(ref(database, "games/" + current_entered_name), {
-            white_army: random_army,
-            turn: -1
-          });
-        } else {
-          update(ref(database, "games/" + current_entered_name), {
-            black_army: random_army,
-            turn: 1
-          });
-        }
-      }
+      
     }
   } else if (gameState === "game") {
     if (you === server_state.turn) {
