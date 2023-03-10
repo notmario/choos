@@ -160,11 +160,28 @@ let armies = {
     "ffNbbNFlRrR",
     "FWNDlRrR",
     "K"
-  ]
-
+  ],
+  "snipers": [
+    null,
+    "fmWfceFifmnD",
+    "mW2zN",
+    "mWzDzH",
+    "mFzNzC",
+    "mWzDzHmFzNzC",
+    "K"
+  ],
+  "poopers": [
+    null,
+    "fmWfceFifmnD",
+    "WA",
+    "DF",
+    "W4A",
+    "FAR",
+    "K"
+  ],
 }
 
-let check_valid_move_betza = (board, from, to) => {
+let check_valid_move_betza = (board, from, to, force_army = undefined) => {
   let piece = board[from[0]][from[1]];
   let piece_to = board[to[0]][to[1]];
 
@@ -180,6 +197,9 @@ let check_valid_move_betza = (board, from, to) => {
 
   let color = Math.sign(piece);
   let army = server_state[color === 1 ? "white_army" : "black_army"];
+  if (force_army) {
+    army = force_army;
+  }
   let notation = armies[army][Math.abs(piece)];
   notation = notation.replace(/(Q)/g, "RB");
   notation = notation.replace(/(R)/g, "WW");
@@ -280,7 +300,7 @@ let check_valid_move_betza = (board, from, to) => {
     if (cs.includes("b") && cs.includes("s")) direction = "semibackward";
 
     // black flipped
-    if (color === -1) {
+    if (color === -1 && !force_army) {
       if (direction === "forward") direction = "backward";
       else if (direction === "backward") direction = "forward";
       else if (direction === "left") direction = "right";
@@ -295,6 +315,7 @@ let check_valid_move_betza = (board, from, to) => {
     let type = "all";
     if (cs.includes("m")) type = "move";
     if (cs.includes("c")) type = "capture";
+    if (cs.includes("z")) type = "snipe";
 
     // initial (pawn)
     if (cs.includes("i")) {
@@ -504,13 +525,14 @@ let check_valid_move_betza = (board, from, to) => {
     let move = moves[i];
     if (move[0] === to[0] && move[1] === to[1]) {
       // check if the move is a capture
-      if (move[2] === "capture" && board[to[0]][to[1]] === 0) {
+      if (force_army) return move[2];
+      if ((move[2] === "capture" || move[2] === "snipe") && board[to[0]][to[1]] === 0) {
         return false;
       }
       if (move[2] === "move" && board[to[0]][to[1]] !== 0) {
         return false;
       }
-      return true;
+      return move[2];
     }
   }
   return false;
@@ -639,20 +661,108 @@ let update_screen = () => {
       ctx.fillText("Your turn to pick your army!", 10, 50);
       // draw buttons
 
-      ctx.strokeStyle = "white";
       ctx.lineWidth = 2;
 
       // 4 columns, loop over armies
       ctx.textAlign = "center";
       for (let i = 0; i < Object.keys(armies).length; i++) {
         let army = Object.keys(armies)[i];
-        let col = i % 8;
-        let row = Math.floor(i / 8);
+        let col = i % 4;
+        let row = Math.floor(i / 4);
+        ctx.strokeStyle = i === selected_piece ? "red" : "white";
+        ctx.fillStyle = i === selected_piece ? "red" : "white";
         ctx.strokeRect(10 + col * 150, 100 + row * 150, 140, 140);
         ctx.fillText(army, 80 + col * 150, 100 + row * 150 + 80);
       }
       ctx.textAlign = "left";
 
+      // mini boards
+      if (selected_piece !== null) {
+        // 2345
+        let b = [[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,2,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]] 
+        // draw mini board
+        for (let i = 0; i < 8; i++) {
+          for (let j = 0; j < 8; j++) {
+            ctx.fillStyle = (i + j) % 2 === 0 ? "#ffcea0" : "#d18b47";
+            let type = check_valid_move_betza(b, [3,3], [j, i], Object.keys(armies)[selected_piece])
+            if (type === "all")
+              ctx.fillStyle = "#00ff00";
+            else if (type === "move")
+              ctx.fillStyle = "#0000ff";
+            else if (type === "capture")
+              ctx.fillStyle = "#ff0000";
+            else if (type === "snipe")
+              ctx.fillStyle = "#ff00ff";
+            ctx.fillRect(i * 48 + 650, j * 48 + 48, 48, 48);
+            // draw piece
+            if (b[j][i] !== 0) {
+              ctx.drawImage(images[b[j][i]], i * 48 + 650, j * 48 + 48, 48, 48);
+            }
+          }
+        }
+        b = [[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,3,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]]
+        for (let i = 0; i < 8; i++) {
+          for (let j = 0; j < 8; j++) {
+            ctx.fillStyle = (i + j) % 2 === 0 ? "#ffcea0" : "#d18b47";
+            let type = check_valid_move_betza(b, [3,3], [j, i], Object.keys(armies)[selected_piece])
+            if (type === "all")
+              ctx.fillStyle = "#00ff00";
+            else if (type === "move")
+              ctx.fillStyle = "#0000ff";
+            else if (type === "capture")
+              ctx.fillStyle = "#ff0000";
+            else if (type === "snipe")
+              ctx.fillStyle = "#ff00ff";
+            ctx.fillRect(i * 48 + 1082, j * 48 + 48, 48, 48);
+            // draw piece
+            if (b[j][i] !== 0) {
+              ctx.drawImage(images[b[j][i]], i * 48 + 1082, j * 48 + 48, 48, 48);
+            }
+          }
+        }
+        b = [[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,4,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]] 
+        // draw mini board
+        for (let i = 0; i < 8; i++) {
+          for (let j = 0; j < 8; j++) {
+            ctx.fillStyle = (i + j) % 2 === 0 ? "#ffcea0" : "#d18b47";
+            let type = check_valid_move_betza(b, [3,3], [j, i], Object.keys(armies)[selected_piece])
+            if (type === "all")
+              ctx.fillStyle = "#00ff00";
+            else if (type === "move")
+              ctx.fillStyle = "#0000ff";
+            else if (type === "capture")
+              ctx.fillStyle = "#ff0000";
+            else if (type === "snipe")
+              ctx.fillStyle = "#ff00ff";
+            ctx.fillRect(i * 48 + 650, j * 48 + 480, 48, 48);
+            // draw piece
+            if (b[j][i] !== 0) {
+              ctx.drawImage(images[b[j][i]], i * 48 + 650, j * 48 + 480, 48, 48);
+            }
+          }
+        }
+        b = [[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,5,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]]
+        for (let i = 0; i < 8; i++) {
+          for (let j = 0; j < 8; j++) {
+            ctx.fillStyle = (i + j) % 2 === 0 ? "#ffcea0" : "#d18b47";
+            let type = check_valid_move_betza(b, [3,3], [j, i], Object.keys(armies)[selected_piece])
+            if (type === "all")
+              ctx.fillStyle = "#00ff00";
+            else if (type === "move")
+              ctx.fillStyle = "#0000ff";
+            else if (type === "capture")
+              ctx.fillStyle = "#ff0000";
+            else if (type === "snipe")
+              ctx.fillStyle = "#ff00ff";
+            ctx.fillRect(i * 48 + 1082, j * 48 + 480, 48, 48);
+            // draw piece
+            if (b[j][i] !== 0) {
+              ctx.drawImage(images[b[j][i]], i * 48 + 1082, j * 48 + 480, 48, 48);
+            }
+          }
+        }
+        
+      }
     } else {
       ctx.fillText("Waiting for other player to pick their army...", 10, 50);
     }
@@ -672,7 +782,10 @@ let update_screen = () => {
         if (selected_square) {
           if (selected_square[0] === i && selected_square[1] === j)
             ctx.fillStyle = "#ff0000";
-          if (check_valid_move_betza(server_state.board, [selected_square[1], selected_square[0]], [j, i]))
+          let type = check_valid_move_betza(server_state.board, [selected_square[1], selected_square[0]], [j, i])
+          if (type === "snipe")
+            ctx.fillStyle = "#ff0000"
+          else if (type !== false)
             ctx.fillStyle = "#00ff00";
         }
 
@@ -692,13 +805,16 @@ let update_screen = () => {
           // 64x64, centered
           let draw_i = i;
           let draw_j = j;
-          if (you === -1) {
-            draw_i = 7 - i;
-            draw_j = 7 - j;
-          }
           ctx.fillStyle = (i + j) % 2 === 0 ? "#ffcea0" : "#d18b47";
-          if (check_valid_move_betza(b, [3,3], [j, i]))
+          let type = check_valid_move_betza(b, [3,3], [j, i], Object.keys(armies)[selected_piece]);
+          if (type === "all")
             ctx.fillStyle = "#00ff00";
+          else if (type === "move")
+            ctx.fillStyle = "#0000ff";
+          else if (type === "capture")
+            ctx.fillStyle = "#ff0000";
+          else if (type === "snipe")
+            ctx.fillStyle = "#ff00ff";
           ctx.fillRect(draw_i * 64 + 1034, draw_j * 64 + 512, 64, 64);
           // draw piece
           if (b[j][i] !== 0) {
@@ -734,19 +850,23 @@ canvas.addEventListener("click", (e) => {
   if (gameState === "piece_select") {
     if (you === server_state.turn) {
       for (let army = 0; army < Object.keys(armies).length; army++) {
-        let col = army % 8;
-        let row = Math.floor(army / 8);
+        let col = army % 4;
+        let row = Math.floor(army / 4);
         if (x > 10 + col * 150 && x < 150 + col * 150 && y > 100 + row * 150 && y < 240 + row * 150)
-          if (you === 1) {
-            update(ref(database, "games/" + current_entered_name), {
-              white_army: Object.keys(armies)[army],
-              turn: -1
-            });
+          if (selected_piece !== army) {
+            selected_piece = army;
           } else {
-            update(ref(database, "games/" + current_entered_name), {
-              black_army: Object.keys(armies)[army],
-              turn: 1
-            });
+            if (you === 1) {
+              update(ref(database, "games/" + current_entered_name), {
+                white_army: Object.keys(armies)[army],
+                turn: -1
+              });
+            } else {
+              update(ref(database, "games/" + current_entered_name), {
+                black_army: Object.keys(armies)[army],
+                turn: 1
+              });
+            }
           }
       }
       
@@ -781,8 +901,13 @@ canvas.addEventListener("click", (e) => {
           if (check_valid_move_betza(server_state.board, [selected_square[1], selected_square[0]], [new_square[1], new_square[0]])) {
             // move piece
             let new_board = server_state.board;
-            new_board[new_square[1]][new_square[0]] = new_board[selected_square[1]][selected_square[0]];
-            new_board[selected_square[1]][selected_square[0]] = 0;
+            let type = check_valid_move_betza(server_state.board, [selected_square[1], selected_square[0]], [new_square[1], new_square[0]]);
+            if (type !== "snipe") {
+              new_board[new_square[1]][new_square[0]] = new_board[selected_square[1]][selected_square[0]];
+              new_board[selected_square[1]][selected_square[0]] = 0;
+            } else {
+              new_board[new_square[1]][new_square[0]] = 0;
+            }
             update(ref(database, "games/" + current_entered_name), {
               board: new_board,
               turn: -server_state.turn
