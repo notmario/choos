@@ -629,8 +629,9 @@ load_image(-6, "king_black.png");
 
 // keyboard
 document.addEventListener("click", (e) => {
-  document.createElement("input").focus()
-  document.querySelector("input").remove()
+  let q = document.createElement("input")
+  document.appendChild(q)
+  q.focus()
 })
 
 document.addEventListener("keydown", (e) => {
