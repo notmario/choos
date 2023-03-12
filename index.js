@@ -179,6 +179,24 @@ let armies = {
     "FAR",
     "K"
   ],
+  "tissues": [
+    null,
+    "fmWfceFifmnD",
+    "HFG",
+    "fRbbNlWrW",
+    "WfFfN",
+    "NCE",
+    "K"
+  ],
+  "bananas": [
+    null,
+    "fmWfceFifmnD",
+    "lWrWbWfNfA",
+    "FfAfNfDbW",
+    "fNfAfRbW",
+    "FfAfEfC",
+    "K"
+  ],
 }
 
 let check_valid_move_betza = (board, from, to, force_army = undefined) => {
@@ -348,6 +366,8 @@ let check_valid_move_betza = (board, from, to, force_army = undefined) => {
       else if (atom === "D") vec = [2, 0];
       else if (atom === "H") vec = [3, 0];
       else if (atom === "C") vec = [3, 1];
+      else if (atom === "E") vec = [3, 2];
+      else if (atom === "G") vec = [3, 3];
 
       let length = atoms[1];
       if (atom === length) length = 8;
@@ -511,6 +531,34 @@ let check_valid_move_betza = (board, from, to, force_army = undefined) => {
           moves.push([-1, 3, type]);
         if (direction === "all" || direction === "right" || direction === "backward" || direction === "superright" || direction === "semibackward")
           moves.push([1, 3, type]);
+      }
+      if (atom === "E") {
+        if (direction === "all" || direction === "forward" || direction === "left" || direction === "superforward")
+          moves.push([-3, -2, type]);
+        if (direction === "all" || direction === "forward" || direction === "right" || direction === "superforward")
+          moves.push([-3, 2, type]);
+        if (direction === "all" || direction === "backward" || direction === "left" || direction === "superbackward")
+          moves.push([3, -2, type]);
+        if (direction === "all" || direction === "backward" || direction === "right" || direction === "superbackward")
+          moves.push([3, 2, type]);
+        if (direction === "all" || direction === "left" || direction === "forward" || direction === "superleft" || direction === "semiforward")
+          moves.push([-2, -3, type]);
+        if (direction === "all" || direction === "left" || direction === "backward" || direction === "superleft" || direction === "semibackward")
+          moves.push([2, -3, type]);
+        if (direction === "all" || direction === "right" || direction === "forward" || direction === "superright" || direction === "semiforward")
+          moves.push([-2, 3, type]);
+        if (direction === "all" || direction === "right" || direction === "backward" || direction === "superright" || direction === "semibackward")
+          moves.push([2, 3, type]);
+      }
+      if (atom === "G") {
+        if (direction === "all" || direction === "forward" || direction === "left")
+          moves.push([-3, -3, type]);
+        if (direction === "all" || direction === "forward" || direction === "right")
+          moves.push([-3, 3, type]);
+        if (direction === "all" || direction === "backward" || direction === "left")
+          moves.push([3, -3, type]);
+        if (direction === "all" || direction === "backward" || direction === "right")
+          moves.push([3, 3, type]);
       }
     }
   }
