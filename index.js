@@ -628,12 +628,6 @@ load_image(-5, "queen_black.png");
 load_image(-6, "king_black.png");
 
 // keyboard
-document.addEventListener("click", (e) => {
-  let q = document.createElement("input")
-  document.appendChild(q)
-  q.focus()
-})
-
 document.addEventListener("keydown", (e) => {
   if (gameState === "menu") {
     if (e.key === "Enter") {
