@@ -215,8 +215,20 @@ let armies = {
     "FNC",
     "FNCA2",
     "K"
+  ],
+  "cultists": [
+    null, 
+    "fmWfceFifmnD",
+    "ffNbW",
+    "F2",
+    "W2",
+    "W3F3NC",
+    "K"
   ]
 }
+
+// let all_pieces = new Set(Object.keys(armies).map(k=>armies[k]).flat())
+// console.log(...all_pieces);
 
 let check_valid_move_betza = (board, from, to, force_army = undefined) => {
   let piece = board[from[0]][from[1]];
