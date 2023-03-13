@@ -33,6 +33,7 @@ let server_state = {};
 let you = 0;
 
 let selected_piece = null;
+let view_board_pos = [3, 3];
 
 let armies = {
   "default": [
@@ -197,6 +198,24 @@ let armies = {
     "FfAfEfC",
     "K"
   ],
+  "goobers": [
+    null,
+    "fmWfceFifmnD",
+    "ffNbbNbFfWfD",
+    "FfAfWbWbbN",
+    "bbNlW4rW4fW2bWbF",
+    "NFWnH",
+    "K"
+  ],
+  "jumpers": [
+    null,
+    "fmWfceFifmnD",
+    "fNfAfDbDD",
+    "NA2",
+    "FNC",
+    "FNCA2",
+    "K"
+  ]
 }
 
 let check_valid_move_betza = (board, from, to, force_army = undefined) => {
@@ -631,6 +650,9 @@ load_image(-6, "king_black.png");
 document.addEventListener("keydown", (e) => {
   if (gameState === "menu") {
     if (e.key === "Enter") {
+      if (current_entered_name === "viewpieces") {
+        gameState = "view_pieces";
+      } else
       if (current_entered_name.length > 0) {
         // check if game exists
         // if not, create game
@@ -703,6 +725,119 @@ let update_screen = () => {
     ctx.fillStyle = "white";
     ctx.font = "30px Arial";
     ctx.fillText("Waiting for other player to join...", 10, 50);
+  } else if (gameState === "view_pieces") {
+    ctx.fillStyle = "white";
+    ctx.fillText("Look at all of the pieces.", 10, 50);
+    // draw buttons
+
+    ctx.lineWidth = 2;
+
+    // 4 columns, loop over armies
+    ctx.textAlign = "center";
+    ctx.font = "16px Arial";
+    for (let i = 0; i < Object.keys(armies).length; i++) {
+      let army = Object.keys(armies)[i];
+      let col = i % 7;
+      let row = Math.floor(i / 7);
+      ctx.strokeStyle = i === selected_piece ? "red" : "white";
+      ctx.fillStyle = i === selected_piece ? "red" : "white";
+      ctx.strokeRect(10 + col * 90, 100 + row * 90, 80, 80);
+      ctx.fillText(army, 50 + col * 90, 100 + row * 90 + 45);
+    }
+    ctx.textAlign = "left";
+    ctx.font = "30px Arial";
+
+    // mini boards
+    if (selected_piece !== null) {
+      // 2345
+      let b = [[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]]
+      b[view_board_pos[1]][view_board_pos[0]] = 2
+      // draw mini board
+      for (let i = 0; i < 8; i++) {
+        for (let j = 0; j < 8; j++) {
+          ctx.fillStyle = (i + j) % 2 === 0 ? "#ffcea0" : "#d18b47";
+          let type = check_valid_move_betza(b, [view_board_pos[1],view_board_pos[0]], [j, i], Object.keys(armies)[selected_piece])
+          if (type === "all")
+            ctx.fillStyle = "#00ff00";
+          else if (type === "move")
+            ctx.fillStyle = "#0000ff";
+          else if (type === "capture")
+            ctx.fillStyle = "#ff0000";
+          else if (type === "snipe")
+            ctx.fillStyle = "#ff00ff";
+          ctx.fillRect(i * 48 + 650, j * 48 + 48, 48, 48);
+          // draw piece
+          if (b[j][i] !== 0) {
+            ctx.drawImage(images[b[j][i]], i * 48 + 650, j * 48 + 48, 48, 48);
+          }
+        }
+      }
+      b = [[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]]
+      b[view_board_pos[1]][view_board_pos[0]] = 3
+      for (let i = 0; i < 8; i++) {
+        for (let j = 0; j < 8; j++) {
+          ctx.fillStyle = (i + j) % 2 === 0 ? "#ffcea0" : "#d18b47";
+          let type = check_valid_move_betza(b, [view_board_pos[1],view_board_pos[0]], [j, i], Object.keys(armies)[selected_piece])
+          if (type === "all")
+            ctx.fillStyle = "#00ff00";
+          else if (type === "move")
+            ctx.fillStyle = "#0000ff";
+          else if (type === "capture")
+            ctx.fillStyle = "#ff0000";
+          else if (type === "snipe")
+            ctx.fillStyle = "#ff00ff";
+          ctx.fillRect(i * 48 + 1082, j * 48 + 48, 48, 48);
+          // draw piece
+          if (b[j][i] !== 0) {
+            ctx.drawImage(images[b[j][i]], i * 48 + 1082, j * 48 + 48, 48, 48);
+          }
+        }
+      }
+      b = [[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]] 
+      b[view_board_pos[1]][view_board_pos[0]] = 4
+      // draw mini board
+      for (let i = 0; i < 8; i++) {
+        for (let j = 0; j < 8; j++) {
+          ctx.fillStyle = (i + j) % 2 === 0 ? "#ffcea0" : "#d18b47";
+          let type = check_valid_move_betza(b, [view_board_pos[1],view_board_pos[0]], [j, i], Object.keys(armies)[selected_piece])
+          if (type === "all")
+            ctx.fillStyle = "#00ff00";
+          else if (type === "move")
+            ctx.fillStyle = "#0000ff";
+          else if (type === "capture")
+            ctx.fillStyle = "#ff0000";
+          else if (type === "snipe")
+            ctx.fillStyle = "#ff00ff";
+          ctx.fillRect(i * 48 + 650, j * 48 + 480, 48, 48);
+          // draw piece
+          if (b[j][i] !== 0) {
+            ctx.drawImage(images[b[j][i]], i * 48 + 650, j * 48 + 480, 48, 48);
+          }
+        }
+      }
+      b = [[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]]
+      b[view_board_pos[1]][view_board_pos[0]] = 5
+      for (let i = 0; i < 8; i++) {
+        for (let j = 0; j < 8; j++) {
+          ctx.fillStyle = (i + j) % 2 === 0 ? "#ffcea0" : "#d18b47";
+          let type = check_valid_move_betza(b, [view_board_pos[1],view_board_pos[0]], [j, i], Object.keys(armies)[selected_piece])
+          if (type === "all")
+            ctx.fillStyle = "#00ff00";
+          else if (type === "move")
+            ctx.fillStyle = "#0000ff";
+          else if (type === "capture")
+            ctx.fillStyle = "#ff0000";
+          else if (type === "snipe")
+            ctx.fillStyle = "#ff00ff";
+          ctx.fillRect(i * 48 + 1082, j * 48 + 480, 48, 48);
+          // draw piece
+          if (b[j][i] !== 0) {
+            ctx.drawImage(images[b[j][i]], i * 48 + 1082, j * 48 + 480, 48, 48);
+          }
+        }
+      }
+      
+    }
   } else if (gameState === "piece_select") {
     ctx.fillStyle = "white";
     if (you === server_state.turn) {
@@ -713,16 +848,18 @@ let update_screen = () => {
 
       // 4 columns, loop over armies
       ctx.textAlign = "center";
+      ctx.font = "16px Arial";
       for (let i = 0; i < Object.keys(armies).length; i++) {
         let army = Object.keys(armies)[i];
-        let col = i % 4;
-        let row = Math.floor(i / 4);
+        let col = i % 7;
+        let row = Math.floor(i / 7);
         ctx.strokeStyle = i === selected_piece ? "red" : "white";
         ctx.fillStyle = i === selected_piece ? "red" : "white";
-        ctx.strokeRect(10 + col * 150, 100 + row * 150, 140, 140);
-        ctx.fillText(army, 80 + col * 150, 100 + row * 150 + 80);
+        ctx.strokeRect(10 + col * 90, 100 + row * 90, 80, 80);
+        ctx.fillText(army, 50 + col * 90, 100 + row * 90 + 45);
       }
       ctx.textAlign = "left";
+      ctx.font = "30px Arial";
 
       // mini boards
       if (selected_piece !== null) {
@@ -895,12 +1032,33 @@ update_screen();
 canvas.addEventListener("click", (e) => {
   let x = e.offsetX * canvas.width / canvas.offsetWidth;
   let y = e.offsetY * canvas.height / canvas.offsetHeight;
-  if (gameState === "piece_select") {
+  if (gameState === "view_pieces") {
+    for (let army = 0; army < Object.keys(armies).length; army++) {
+      let col = army % 7;
+      let row = Math.floor(army / 7);
+      if (x > 10 + col * 90 && x < 90 + col * 90 && y > 100 + row * 90 && y < 190 + row * 90)
+        selected_piece = army;
+    }
+    // mini boards
+    for (let i = 0; i < 4; i++) {
+      // 2x2
+      let col = i % 2;
+      let row = Math.floor(i / 2);
+      if (x > 650 + col * 9 * 48 && x < 1034 + col * 9 * 48 && y > 48 + row * 9 * 48 && y < 432 + row * 9 * 48) {
+        // position
+        let off_x = x - (650 + col * 9 * 48);
+        let off_y = y - (48 + row * 9 * 48);
+        let square_x = Math.floor(off_x / 48);
+        let square_y = Math.floor(off_y / 48);
+        view_board_pos = [square_x, square_y];
+      }
+    }
+  } else if (gameState === "piece_select") {
     if (you === server_state.turn) {
       for (let army = 0; army < Object.keys(armies).length; army++) {
-        let col = army % 4;
-        let row = Math.floor(army / 4);
-        if (x > 10 + col * 150 && x < 150 + col * 150 && y > 100 + row * 150 && y < 240 + row * 150)
+        let col = army % 7;
+        let row = Math.floor(army / 7);
+        if (x > 10 + col * 90 && x < 90 + col * 90 && y > 100 + row * 90 && y < 190 + row * 90)
           if (selected_piece !== army) {
             selected_piece = army;
           } else {
