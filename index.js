@@ -165,10 +165,10 @@ let armies = {
   "snipers": [
     null,
     "fmWfceFifmnD",
-    "mWmDzN",
-    "mWzDzH",
+    "mWmfDmbDzffNzbbNzlDzrD",
+    "mWzfDzbDzfsNzbsNzfHzbH",
     "mFzNzC",
-    "mWzDzHmFzNzC",
+    "WzfDzfHFzffNzffC",
     "K"
   ],
   "poopers": [
@@ -646,6 +646,25 @@ load_image(-4, "rook_black.png");
 load_image(-5, "queen_black.png");
 load_image(-6, "king_black.png");
 
+let new_images = {};
+let load_new_image = (id, src) => {
+  new_images[id+"_white"] = new Image();
+  new_images[id+"_white"].src = src+"-white.png";
+
+  new_images[id+"_black"] = new Image();
+  new_images[id+"_black"].src = src+"-black.png";
+}
+
+load_new_image("fmWfceFifmnD", "new/pawn");
+load_new_image("R", "new/rook");
+load_new_image("N", "new/knight");
+load_new_image("B", "new/bishop");
+load_new_image("Q", "new/queen");
+load_new_image("K", "new/king");
+load_new_image("WA", "new/waffle");
+load_new_image("FAD", "new/fad");
+load_new_image("BD", "new/bd");
+
 // keyboard
 document.addEventListener("keydown", (e) => {
   if (gameState === "menu") {
@@ -768,6 +787,7 @@ let update_screen = () => {
           ctx.fillRect(i * 48 + 650, j * 48 + 48, 48, 48);
           // draw piece
           if (b[j][i] !== 0) {
+            // ctx.drawImage(new_images[Object.values(armies)[selected_piece][2]+"_black"], i * 48 + 650, j * 48 + 48, 48, 48);
             ctx.drawImage(images[b[j][i]], i * 48 + 650, j * 48 + 48, 48, 48);
           }
         }
@@ -789,6 +809,7 @@ let update_screen = () => {
           ctx.fillRect(i * 48 + 1082, j * 48 + 48, 48, 48);
           // draw piece
           if (b[j][i] !== 0) {
+            // ctx.drawImage(new_images[Object.values(armies)[selected_piece][3]+"_black"], i * 48 + 1082, j * 48 + 48, 48, 48);
             ctx.drawImage(images[b[j][i]], i * 48 + 1082, j * 48 + 48, 48, 48);
           }
         }
@@ -811,6 +832,7 @@ let update_screen = () => {
           ctx.fillRect(i * 48 + 650, j * 48 + 480, 48, 48);
           // draw piece
           if (b[j][i] !== 0) {
+            // ctx.drawImage(new_images[Object.values(armies)[selected_piece][4]+"_black"], i * 48 + 650, j * 48 + 480, 48, 48);
             ctx.drawImage(images[b[j][i]], i * 48 + 650, j * 48 + 480, 48, 48);
           }
         }
@@ -832,6 +854,7 @@ let update_screen = () => {
           ctx.fillRect(i * 48 + 1082, j * 48 + 480, 48, 48);
           // draw piece
           if (b[j][i] !== 0) {
+            // ctx.drawImage(new_images[Object.values(armies)[selected_piece][5]+"_black"], i * 48 + 1082, j * 48 + 480, 48, 48);
             ctx.drawImage(images[b[j][i]], i * 48 + 1082, j * 48 + 480, 48, 48);
           }
         }
@@ -881,6 +904,7 @@ let update_screen = () => {
             ctx.fillRect(i * 48 + 650, j * 48 + 48, 48, 48);
             // draw piece
             if (b[j][i] !== 0) {
+              // ctx.drawImage(new_images[Object.values(armies)[selected_piece][2]+"_white"], i * 48 + 650, j * 48 + 48, 48, 48);
               ctx.drawImage(images[b[j][i]], i * 48 + 650, j * 48 + 48, 48, 48);
             }
           }
@@ -901,6 +925,7 @@ let update_screen = () => {
             ctx.fillRect(i * 48 + 1082, j * 48 + 48, 48, 48);
             // draw piece
             if (b[j][i] !== 0) {
+              // ctx.drawImage(new_images[Object.values(armies)[selected_piece][3]+"_white"], i * 48 + 1082, j * 48 + 48, 48, 48);
               ctx.drawImage(images[b[j][i]], i * 48 + 1082, j * 48 + 48, 48, 48);
             }
           }
@@ -922,6 +947,7 @@ let update_screen = () => {
             ctx.fillRect(i * 48 + 650, j * 48 + 480, 48, 48);
             // draw piece
             if (b[j][i] !== 0) {
+              // ctx.drawImage(new_images[Object.values(armies)[selected_piece][4]+"_white"], i * 48 + 650, j * 48 + 480, 48, 48);
               ctx.drawImage(images[b[j][i]], i * 48 + 650, j * 48 + 480, 48, 48);
             }
           }
@@ -942,6 +968,7 @@ let update_screen = () => {
             ctx.fillRect(i * 48 + 1082, j * 48 + 480, 48, 48);
             // draw piece
             if (b[j][i] !== 0) {
+              // ctx.drawImage(new_images[Object.values(armies)[selected_piece][5]+"_white"], i * 48 + 1082, j * 48 + 480, 48, 48);
               ctx.drawImage(images[b[j][i]], i * 48 + 1082, j * 48 + 480, 48, 48);
             }
           }
@@ -977,6 +1004,11 @@ let update_screen = () => {
         ctx.fillRect(draw_i * 128, draw_j * 128, 128, 128);
         // draw piece
         if (server_state.board[j][i] !== 0) {
+          // // get army
+          // let sign = server_state.board[j][i] > 0 ? 1 : -1;
+          // let army = sign === 1 ? server_state.white_army : server_state.black_army;
+          // let notation = armies[army][Math.abs(server_state.board[j][i])];
+          // ctx.drawImage(new_images[notation + "_" + (sign === 1 ? "white" : "black")], draw_i * 128, draw_j * 128, 128, 128);
           ctx.drawImage(images[server_state.board[j][i]], draw_i * 128, draw_j * 128, 128, 128);
         }
       }
@@ -1003,6 +1035,10 @@ let update_screen = () => {
           ctx.fillRect(draw_i * 64 + 1034, draw_j * 64 + 512, 64, 64);
           // draw piece
           if (b[j][i] !== 0) {
+            // let sign = b[j][i] > 0 ? 1 : -1;
+            // let army = sign === 1 ? server_state.white_army : server_state.black_army;
+            // let notation = armies[army][Math.abs(b[j][i])];
+            // ctx.drawImage(new_images[notation + "_" + (sign === 1 ? "white" : "black")], draw_i * 64 + 1034, draw_j * 64 + 512, 64, 64);
             ctx.drawImage(images[b[j][i]], draw_i * 64 + 1034, draw_j * 64 + 512, 64, 64);
           }
         }
