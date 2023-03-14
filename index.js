@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js";
-import { getDatabase, ref, update, onValue, get, orderByChild, equalTo, push, query } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js";
+import { getDatabase, ref, update, onValue, get, orderByChild, equalTo, push, query, remove } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js";
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -624,6 +624,13 @@ let selected_square = null;
 let getServerUpdate = (snapshot) => {
   if (snapshot.exists()) {
     server_state = snapshot.val();
+    if (gameState !== "menu" && server_state.finished === true) {
+      gameState = "menu";
+      console.log("game finished!");
+      alert("The other player left :(")
+      current_entered_name = "";
+      // clear getserverupdate
+    }
     if (gameState === "waiting") {
       if (server_state.players === 2) {
         console.log("starting game!");
@@ -1273,3 +1280,16 @@ canvas.addEventListener("click", (e) => {
     }
   }
 });
+
+window.addEventListener("beforeunload", (e)=>{
+  // IF we are in a game, and IF there is only one player, delete the game
+  if (gameState === "waiting" && server_state.players === 1) {
+    remove(ref(database, "games/" + current_entered_name));
+  }
+  // IF we **are** in a game, set flag "finished" to true
+  if (gameState === "game" || gameState === "piece_select") {
+    update(ref(database, "games/" + current_entered_name), {
+      finished: true
+    });
+  }
+})
