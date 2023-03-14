@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js";
-import { getDatabase, ref, update, onValue, get} from "https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js";
+import { getDatabase, ref, update, onValue, get, orderByChild, equalTo, push, query } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-database.js";
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -26,9 +26,11 @@ const database = getDatabase(app);
 // can join game with name
 // can create game with name
 
+let player_name = "";
+
 let current_entered_name = "";
 
-let gameState = "menu";
+let gameState = "enter_name";
 let server_state = {};
 let you = 0;
 
@@ -216,7 +218,7 @@ let armies = {
     "FNCA2",
     "K"
   ],
-  "cultists": [
+  "cultist": [
     null, 
     "fmWfceFifmnD",
     "ffNbW",
@@ -679,6 +681,15 @@ load_new_image("BD", "new/bd");
 
 // keyboard
 document.addEventListener("keydown", (e) => {
+  if (gameState === "enter_name") {
+    if (e.key === "Enter") {
+      gameState = "menu";
+    } else if (e.key === "Backspace") {
+      player_name = player_name.slice(0, -1);
+    } else {
+      player_name += e.key;
+    }
+  } else
   if (gameState === "menu") {
     if (e.key === "Enter") {
       if (current_entered_name === "viewpieces") {
@@ -697,7 +708,8 @@ document.addEventListener("keydown", (e) => {
             // join game if only 1 player
             if (snapshot.val().players === 1) {
               update(ref(database, "games/" + current_entered_name), {
-                players: 2
+                players: 2,
+                black_name: player_name
               });
               you = -1;
               gameState = "piece_select";
@@ -725,7 +737,8 @@ document.addEventListener("keydown", (e) => {
               ],
               turn: 1,
               white_army: null,
-              black_army: null
+              black_army: null,
+              white_name: player_name
             });
             gameState = "waiting";
             you = 1;
@@ -736,6 +749,77 @@ document.addEventListener("keydown", (e) => {
         }).catch((error) => {
           console.error(error);
         });
+      } else {
+        // enter matchmaking
+
+        // first, check if there is a game with the key "matchmaking", and if it has 1 player using order by child
+        get(query(ref(database, "games"), orderByChild("players"), equalTo(1))).then((snapshot) => {
+          // now check for games with the key "matchmaking"
+          if (snapshot.exists()) {
+            // filter for matchmaking games
+            let games = snapshot.val();
+            console.log(games);
+            let matchmaking_games = [];
+            for (let game in games) {
+              if (snapshot.val()[game].matchmaking === true) {
+                matchmaking_games.push(snapshot.val()[game]);
+              }
+            }
+            // join matchmaking game if it exists
+            if (matchmaking_games.length > 0) {
+              // get key
+              let matchmaking_keys = Object.keys(snapshot.val()).filter((key) => {
+                return snapshot.val()[key].players === 1 && snapshot.val()[key].matchmaking === true;
+              });
+
+              // random
+              let matchmaking_key = matchmaking_keys[Math.floor(Math.random() * matchmaking_keys.length)];
+
+              // join game
+              update(ref(database, "games/" + matchmaking_key), {
+                players: 2,
+                black_name: player_name
+              });
+              you = -1;
+              gameState = "piece_select";
+              console.log("starting game!");
+              // listen for changes to game
+              onValue(ref(database, "games/" + matchmaking_key), getServerUpdate);
+
+              current_entered_name = matchmaking_key;
+
+            }
+          } else {
+            // make a new matchmaking game, push to database
+            console.log("game does not exist");
+            let newGameRef = push(ref(database, "games"), {
+              players: 1,
+              board: [
+                [-4, -2, -3, -5, -6, -3, -2, -4],
+                [-1, -1, -1, -1, -1, -1, -1, -1],
+                [0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0],
+                [1, 1, 1, 1, 1, 1, 1, 1],
+                [4, 2, 3, 5, 6, 3, 2, 4]
+              ],
+              turn: 1,
+              white_army: null,
+              black_army: null,
+              white_name: player_name,
+              matchmaking: true
+            });
+            gameState = "waiting";
+            you = 1;
+
+            // listen for changes to game
+            onValue(newGameRef, getServerUpdate);
+
+            // set current_entered_name to the key of the new game
+            current_entered_name = newGameRef.key;
+          }
+        })
       }
     } else if (e.key === "Backspace") {
       current_entered_name = current_entered_name.slice(0, -1);
@@ -747,10 +831,16 @@ document.addEventListener("keydown", (e) => {
 
 let update_screen = () => {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (gameState === "enter_name") {
+    ctx.fillStyle = "white";
+    ctx.font = "30px Arial";
+    ctx.fillText("Enter your name", 10, 50);
+    ctx.fillText(player_name, 10, 100);
+  } else
   if (gameState === "menu") {
     ctx.fillStyle = "white";
     ctx.font = "30px Arial";
-    ctx.fillText("Enter code to join game", 10, 50);
+    ctx.fillText("Enter code to join game, enter nothing to enter matchmaking", 10, 50);
     ctx.fillText(current_entered_name, 10, 100);
   } else if (gameState === "waiting") {
     ctx.fillStyle = "white";
@@ -1071,6 +1161,14 @@ let update_screen = () => {
     // armies
     ctx.fillText("White army: "+server_state.white_army, 1034, 80);
     ctx.fillText("Black army: "+server_state.black_army, 1034, 110);
+
+    // draw names
+    ctx.fillStyle = "white";
+    ctx.font = "30px Arial";
+
+    ctx.fillText("White: "+server_state.white_name, 1034, 140);
+    ctx.fillText("vs", 1034, 170)
+    ctx.fillText("Black: "+server_state.black_name, 1034, 200);
   }
   requestAnimationFrame(update_screen);
 }
