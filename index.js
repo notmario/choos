@@ -625,10 +625,16 @@ let getServerUpdate = (snapshot) => {
   if (snapshot.exists()) {
     server_state = snapshot.val();
     if (gameState !== "menu" && server_state.finished === true) {
-      gameState = "menu";
-      console.log("game finished!");
-      alert("The other player left :(")
-      current_entered_name = "";
+      // winner
+      if (server_state.winner === undefined) {
+        gameState = "menu";
+        console.log("game finished!");
+        alert("The other player left :(")
+        current_entered_name = "";
+      } else {
+        // gameState = game_end
+        gameState = "game_end";
+      }
       // clear getserverupdate
     }
     if (gameState === "waiting") {
@@ -832,6 +838,11 @@ document.addEventListener("keydown", (e) => {
       current_entered_name = current_entered_name.slice(0, -1);
     } else if (e.key.length === 1) {
       current_entered_name += e.key;
+    }
+  } else if (gameState === "game_end") {
+    if (e.key === "Enter") {
+      gameState = "menu";
+      current_entered_name = "";
     }
   }
 });
@@ -1176,6 +1187,57 @@ let update_screen = () => {
     ctx.fillText("White: "+server_state.white_name, 1034, 140);
     ctx.fillText("vs", 1034, 170)
     ctx.fillText("Black: "+server_state.black_name, 1034, 200);
+  } else if (gameState === "game_end") {
+    // draw board
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 8; i++) {
+      for (let j = 0; j < 8; j++) {
+        // 64x64, centered
+        let draw_i = i;
+        let draw_j = j;
+        if (you === -1) {
+          draw_i = 7 - i;
+          draw_j = 7 - j;
+        }
+        ctx.fillStyle = (i + j) % 2 === 0 ? "#ffcea0" : "#d18b47";
+
+        ctx.fillRect(draw_i * 128, draw_j * 128, 128, 128);
+        // draw piece
+        if (server_state.board[j][i] !== 0) {
+          // // get army
+          // let sign = server_state.board[j][i] > 0 ? 1 : -1;
+          // let army = sign === 1 ? server_state.white_army : server_state.black_army;
+          // let notation = armies[army][Math.abs(server_state.board[j][i])];
+          // ctx.drawImage(new_images[notation + "_" + (sign === 1 ? "white" : "black")], draw_i * 128, draw_j * 128, 128, 128);
+          ctx.drawImage(images[server_state.board[j][i]], draw_i * 128, draw_j * 128, 128, 128);
+        }
+      }
+    }
+
+    // draw turn
+    if (server_state.winner === "black") {
+      ctx.fillStyle = "white";
+      ctx.font = "30px Arial";
+      ctx.fillText("Black wins!", 1034, 50);
+    } else if (server_state.winner === "white") {
+      ctx.fillStyle = "white";
+      ctx.font = "30px Arial";
+      ctx.fillText("White wins!", 1034, 50);
+    }
+
+    // armies
+    ctx.fillText("White army: "+server_state.white_army, 1034, 80);
+    ctx.fillText("Black army: "+server_state.black_army, 1034, 110);
+
+    // draw names
+    ctx.fillStyle = "white";
+    ctx.font = "30px Arial";
+
+    ctx.fillText("White: "+server_state.white_name, 1034, 140);
+    ctx.fillText("vs", 1034, 170)
+    ctx.fillText("Black: "+server_state.black_name, 1034, 200);
+
+    ctx.fillText("Enter to return to lobby", 1034, 230);
   }
   requestAnimationFrame(update_screen);
 }
@@ -1267,9 +1329,24 @@ canvas.addEventListener("click", (e) => {
             } else {
               new_board[new_square[1]][new_square[0]] = 0;
             }
+            // check game end
+            let is_game_over = false;
+            let winner = null;
+            let all_squares = new_board.flat();
+            if (!all_squares.includes(6)) {
+              is_game_over = true;
+              winner = "black";
+            }
+            if (!all_squares.includes(-6)) {
+              is_game_over = true;
+              winner = "white";
+            }
+
             update(ref(database, "games/" + current_entered_name), {
               board: new_board,
-              turn: -server_state.turn
+              turn: -server_state.turn,
+              finished: is_game_over,
+              winner: winner
             });
             selected_square = null;
           } else {
