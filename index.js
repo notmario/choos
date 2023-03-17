@@ -1326,6 +1326,15 @@ canvas.addEventListener("click", (e) => {
             if (type !== "snipe") {
               new_board[new_square[1]][new_square[0]] = new_board[selected_square[1]][selected_square[0]];
               new_board[selected_square[1]][selected_square[0]] = 0;
+              
+              // promotion!
+              // on the 0th rank, promote pawn to queen
+              if (new_square[1] === 0 && new_board[new_square[1]][new_square[0]] === 1) {
+                new_board[new_square[1]][new_square[0]] = 5;
+              }
+              if (new_square[1] === 7 && new_board[new_square[1]][new_square[0]] === -1) {
+                new_board[new_square[1]][new_square[0]] = -5;
+              }
             } else {
               new_board[new_square[1]][new_square[0]] = 0;
             }
