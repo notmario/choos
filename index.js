@@ -29,6 +29,7 @@ const database = getDatabase(app);
 let player_name = "";
 
 let current_entered_name = "";
+let current_entered_chat = "";
 
 let gameState = "enter_name";
 let server_state = {};
@@ -731,6 +732,12 @@ document.addEventListener("keydown", (e) => {
               onValue(ref(database, "games/" + current_entered_name), getServerUpdate);
             } else {
               console.log("game is full");
+              // spectate
+
+              gameState = "game";
+              you = 0;
+              // listen for changes to game
+              onValue(ref(database, "games/" + current_entered_name), getServerUpdate);
             }
           } else {
             console.log("game does not exist");
@@ -838,6 +845,22 @@ document.addEventListener("keydown", (e) => {
       current_entered_name = current_entered_name.slice(0, -1);
     } else if (e.key.length === 1) {
       current_entered_name += e.key;
+    }
+  } else if (gameState === "game") {
+    // chat
+    if (e.key === "Enter") {
+      // send message
+      if (current_entered_chat !== "") {
+        let newMessageRef = push(ref(database, "games/" + current_entered_name + "/chat"), {
+          name: player_name,
+          message: current_entered_chat
+        });
+        current_entered_chat = "";
+      }
+    } else if (e.key === "Backspace") {
+      current_entered_chat = current_entered_chat.slice(0, -1);
+    } else if (e.key.length === 1) {
+      current_entered_chat += e.key;
     }
   } else if (gameState === "game_end") {
     if (e.key === "Enter") {
@@ -1103,6 +1126,7 @@ let update_screen = () => {
     ctx.lineWidth = 2;
     for (let i = 0; i < 8; i++) {
       for (let j = 0; j < 8; j++) {
+        if (server_state.board === undefined) continue;
         // 64x64, centered
         let draw_i = i;
         let draw_j = j;
@@ -1139,6 +1163,7 @@ let update_screen = () => {
       // draw mini board
       for (let i = 0; i < 8; i++) {
         for (let j = 0; j < 8; j++) {
+          if (server_state.board === undefined) continue;
           // 64x64, centered
           let draw_i = i;
           let draw_j = j;
@@ -1166,7 +1191,11 @@ let update_screen = () => {
     }
 
     // draw turn
-    if (you === server_state.turn) {
+    if (you === 0) {
+      ctx.fillStyle = "white";
+      ctx.font = "30px Arial";
+      ctx.fillText("Spectating...", 1034, 50);
+    } else if (you === server_state.turn) {
       ctx.fillStyle = "white";
       ctx.font = "30px Arial";
       ctx.fillText("Your turn!", 1034, 50);
@@ -1187,6 +1216,19 @@ let update_screen = () => {
     ctx.fillText("White: "+server_state.white_name, 1034, 140);
     ctx.fillText("vs", 1034, 170)
     ctx.fillText("Black: "+server_state.black_name, 1034, 200);
+
+    // chat
+    ctx.fillStyle = "white";
+    ctx.font = "30px Arial";
+    ctx.fillText("Chat (type/enter): " + current_entered_chat, 1034, 230);
+    ctx.font = "20px Arial";
+    if (!server_state.chat) server_state.chat = {};
+    Object.keys(server_state.chat).forEach((k, i) => {
+      let msg = server_state.chat[k];
+      ctx.fillText(`${msg.name}: ${msg.message}`, 1034, 250 + i * 20);
+    });
+
+
   } else if (gameState === "game_end") {
     // draw board
     ctx.lineWidth = 2;
@@ -1373,7 +1415,7 @@ window.addEventListener("beforeunload", (e)=>{
     remove(ref(database, "games/" + current_entered_name));
   }
   // IF we **are** in a game, set flag "finished" to true
-  if (gameState === "game" || gameState === "piece_select") {
+  if ((gameState === "game" || gameState === "piece_select") && you !== 0) {
     update(ref(database, "games/" + current_entered_name), {
       finished: true
     });
